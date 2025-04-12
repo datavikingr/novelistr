@@ -2,6 +2,7 @@
 
 import customtkinter as ctk
 from tkinter import filedialog
+import tkinter.font as tkFont
 import os, json
 
 # ===== INIT ===== #
@@ -235,23 +236,41 @@ def confirm_clear_recent_files():
 	ctk.CTkButton(btn_frame, text="Yes", command=confirm, width=80).pack(side="left", padx=10)
 	ctk.CTkButton(btn_frame, text="No", command=cancel, width=80).pack(side="right", padx=10)
 
+def toggle_tag(tag_name):
+    try:
+        start = text_widget.index("sel.first")
+        end = text_widget.index("sel.last")
+
+        # Check if tag is already applied
+        if tag_name in text_widget.tag_names("sel.first"):
+            text_widget.tag_remove(tag_name, start, end)
+        else:
+            text_widget.tag_add(tag_name, start, end)
+    except:
+        pass
+
 # ===== UI ===== #
 
 # ----- Toolbar (Top: row=0, spans both columns) -----
 toolbar = ctk.CTkFrame(master=app, height=50)
 toolbar.grid(row=0, column=0, columnspan=2, sticky="ew")
 
-# ----- Toolbar Buttons
 toggle_button = ctk.CTkButton(toolbar, text="☰", width=40,command=collapse_sidebar)
 toggle_button.pack(side="left", padx=10, pady=10)
+
 new_button = ctk.CTkButton(master=toolbar, text="New", width=60, fg_color=toolbar.cget("fg_color"), command=func_new)
 new_button.pack(side="left", padx=5, pady=5)
+
 save_button = ctk.CTkButton(master=toolbar, text="Save", width=60, fg_color=toolbar.cget("fg_color"), command=func_save)
 save_button.pack(side="left", padx=5, pady=5)
+
 load_button = ctk.CTkButton(master=toolbar, text="Load", width=60, fg_color=toolbar.cget("fg_color"), command=func_load)
 load_button.pack(side="left", padx=5, pady=5)
-#button = customtkinter.CTkButton(master=app, text="Save", command=func_save)
-#button.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
+
+bold_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Bold", command=lambda: toggle_tag("bold")).pack(side="left", padx=5)
+italic_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Italic", command=lambda: toggle_tag("italic")).pack(side="left", padx=5)
+underline_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Underline", command=lambda: toggle_tag("underline")).pack(side="left", padx=5)
+heading_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Heading", command=lambda: toggle_tag("heading")).pack(side="left", padx=5)
 
 # ----- Sidebar (Left: column=0) -----
 sidebar = ctk.CTkFrame(master=app)
@@ -265,11 +284,31 @@ recent_files_frame.pack(fill="both", expand=False, pady=(2, 0))
 # ----- Example label in sidebar
 ctk.CTkLabel(sidebar, text="Sidebar Filler").pack(padx=10, pady=10)
 
-
 # ----- Text area
 notepad = ctk.CTkTextbox(master=app, wrap='word')
 notepad.grid(row=1, column=1, sticky="nsew")
 notepad.focus_set()
+
+# ----- Defining fonts/tags
+text_widget = notepad._textbox
+
+bold_font = tkFont.Font(text_widget, text_widget.cget("font"))
+bold_font.configure(weight="bold")
+
+italic_font = tkFont.Font(text_widget, text_widget.cget("font"))
+italic_font.configure(slant="italic")
+
+underline_font = tkFont.Font(text_widget, text_widget.cget("font"))
+underline_font.configure(underline=True)
+
+heading_font = tkFont.Font(text_widget, text_widget.cget("font"))
+heading_font.configure(size=18, weight="bold")
+
+# Configure tags
+text_widget.tag_configure("bold", font=bold_font)
+text_widget.tag_configure("italic", font=italic_font)
+text_widget.tag_configure("underline", font=underline_font)
+text_widget.tag_configure("heading", font=heading_font)
 
 # ===== Main ===== #
 refresh_recent_files()
