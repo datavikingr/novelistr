@@ -25,6 +25,8 @@ how_recent = 25
 current_file = None
 recent_label = None
 last_saved_content = None
+app_title = "Novelistr"
+current_app_title = app_title
 
 # ----- Functions and logic
 def bind_and_block(action):
@@ -40,7 +42,7 @@ def func_new():
 
 	def confirm():
 		notepad.delete("1.0", "end")
-		app.title("Novelistr - new file")
+		app.title(app_title)
 		current_file = None
 		update_status_label()
 		dialog.destroy()
@@ -56,40 +58,46 @@ def on_closing():
 	app.destroy()
 
 def save_file():
-	global current_file, last_saved_content
+	global current_file, last_saved_content, current_app_title
 	mode = format_mode.get()
-	if mode == "Plaintext":
-		content = notepad.get("1.0", "end-1c")
-		extension = ".txt"
-		file_types = [("Text Files", "*.txt"), ("All Files", "*.*")]
-	elif mode == "Formatted":
-		content = convert_to_md()
-		extension = ".md"
-		file_types = [("Markdown Files", "*.md"), ("All Files", "*.*")]
-	if not current_file:
-		file_path = filedialog.asksaveasfilename(
-			defaultextension=extension,
-			filetypes=file_types,
-			title="Save As"
-		)
-		if file_path:
+	content = notepad.get("1.0", "end-1c")
+	if content != "":
+		if mode == "Plaintext":
+			content = notepad.get("1.0", "end-1c")
+			extension = ".txt"
+			file_types = [("Text Files", "*.txt"), ("All Files", "*.*")]
+		elif mode == "Formatted":
+			content = convert_to_md()
+			extension = ".md"
+			file_types = [("Markdown Files", "*.md"), ("All Files", "*.*")]
+		if not current_file:
+			file_path = filedialog.asksaveasfilename(
+				defaultextension=extension,
+				filetypes=file_types,
+				title="Save As"
+			)
+			if file_path:
+				with open(file_path, "w", encoding="utf-8") as f:
+					f.write(content)
+				print(f"Saved to {file_path}")
+				current_file = file_path
+				current_app_title = f"Novelistr - {os.path.basename(file_path)}"
+				app.title(current_app_title)
+				save_recent_file(file_path)
+			else:
+				print("Save cancelled.")
+		else:
+			file_path = current_file
 			with open(file_path, "w", encoding="utf-8") as f:
 				f.write(content)
-			print(f"Saved to {file_path}")
 			current_file = file_path
-			app.title(f"Novelistr - {os.path.basename(file_path)}")
-			save_recent_file(file_path)
-		else:
-			print("Save cancelled.")
-	else:
-		file_path = current_file
-		with open(file_path, "w", encoding="utf-8") as f:
-			f.write(content)
-	last_saved_content = content
-	saved_label.configure(text="Saved")
+			current_app_title = f"Novelistr - {os.path.basename(file_path)}"
+			app.title(current_app_title)
+		last_saved_content = content
+		saved_label.configure(text="Saved")
 
 def load_file():
-	global current_file, last_saved_content
+	global current_file, last_saved_content, current_app_title
 	mode = format_mode.get()
 	if mode == "Plaintext":
 		extension = ".txt"
@@ -112,7 +120,8 @@ def load_file():
 		last_saved_content = notepad.get("1.0", "end-1c")
 		print(f"Loaded from {file_path}")
 		current_file = file_path
-		app.title(f"Novelistr - {os.path.basename(file_path)}")
+		current_app_title = f"Novelistr - {os.path.basename(file_path)}"
+		app.title(current_app_title)
 		save_recent_file(file_path)
 	else:
 		print("Load cancelled.")
@@ -351,7 +360,8 @@ def refresh_recent_files():
 	).pack(pady=8, padx=5)
 
 def open_recent_file(path):
-	global current_file, last_saved_content
+	global current_file, last_saved_content, current_app_title
+	save_file()
 	ext = os.path.splitext(path)[1].lower()
 	if ext == ".md":
 		format_mode.set("Formatted")
@@ -366,7 +376,8 @@ def open_recent_file(path):
 	if mode == "Formatted":
 		format_from_md()
 	current_file = path
-	app.title(f"Novelistr - {os.path.basename(path)}")
+	current_app_title = f"Novelistr - {os.path.basename(path)}"
+	app.title(current_app_title)
 	try:
 		with open(".recent.txt", "r") as f:
 			recent = json.load(f)
@@ -436,9 +447,13 @@ def update_status_label():
 		status_label.configure(text=f"Line count: {line_count}")
 
 def update_saved_label():
-	current = notepad.get("1.0", "end-1c")
-	if current != last_saved_content:
+	global last_saved_content, current_app_title
+	content = notepad.get("1.0", "end-1c")
+	if content != last_saved_content:
 		saved_label.configure(text="Unsaved")
+		if " *" not in current_app_title:
+			current_app_title += " *"
+			app.title(current_app_title)
 	else:
 		saved_label.configure(text="Saved")
 
