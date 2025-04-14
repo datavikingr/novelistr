@@ -490,6 +490,8 @@ notepad = ctk.CTkTextbox(master=app, undo=True, wrap='word')
 notepad.grid(row=1, column=1, sticky="nsew")
 notepad.focus_set()
 notepad.bind("<KeyRelease>", lambda event: update_reports())
+
+# ----- Windows/Linux keybinds
 notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
 notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
 notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
@@ -500,6 +502,18 @@ notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
 notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
 notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
 notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
+
+# ----- Mac keybinds
+notepad.bind("<Command-n>", bind_and_block(lambda: func_new()))
+notepad.bind("<Command-s>", bind_and_block(lambda:save_file()))
+notepad.bind("<Command-o>", bind_and_block(lambda:load_file()))
+notepad.bind("<Command-m>", bind_and_block(lambda:key_toggle_format()))
+notepad.bind("<Command-z>", lambda event: notepad.edit_undo())
+notepad.bind("<Command-y>", lambda event: notepad.edit_redo())
+notepad.bind("<Command-b>", bind_and_block(lambda:toggle_tag("bold")))
+notepad.bind("<Command-i>", bind_and_block(lambda:toggle_tag("italic")))
+notepad.bind("<Command-u>", bind_and_block(lambda:toggle_tag("underline")))
+notepad.bind("<Command-h>", bind_and_block(lambda:toggle_tag("heading")))
 
 
 # ----- Defining fonts/tags
