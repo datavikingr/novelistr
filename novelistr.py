@@ -3,7 +3,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
 import tkinter.font as tkFont
-import os, json, re
+import os, json, re, sys
 
 # ===== INIT ===== #
 
@@ -24,18 +24,39 @@ sidebar_width = 250
 how_recent = 25
 current_file = None
 recent_label = None
+last_saved_content = None
 
 # ----- Functions and logic
+def bind_and_block(action):
+	return lambda e: (action(), "break")[1]
+
 def func_new():
-	notepad.delete("1.0", "end")
-	app.title("Novelistr - new file")
+	dialog = ctk.CTkToplevel(app)
+	dialog.title("Confirm New File")
+	dialog.geometry("300x120")
+	ctk.CTkLabel(dialog, text="Really Start a New File?", font=ctk.CTkFont(size=14)).pack(pady=15)
+	btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+	btn_frame.pack(pady=5)
+
+	def confirm():
+		notepad.delete("1.0", "end")
+		app.title("Novelistr - new file")
+		current_file = None
+		update_status_label()
+		dialog.destroy()
+
+	def cancel():
+		dialog.destroy()
+
+	ctk.CTkButton(btn_frame, text="Yes", command=confirm, width=80).pack(side="left", padx=10)
+	ctk.CTkButton(btn_frame, text="No", command=cancel, width=80).pack(side="right", padx=10)
 
 def on_closing():
 	save_file()
 	app.destroy()
 
 def save_file():
-	global current_file
+	global current_file, last_saved_content
 	mode = format_mode.get()
 	if mode == "Plaintext":
 		content = notepad.get("1.0", "end-1c")
@@ -64,9 +85,11 @@ def save_file():
 		file_path = current_file
 		with open(file_path, "w", encoding="utf-8") as f:
 			f.write(content)
+	last_saved_content = content
+	saved_label.configure(text="Saved")
 
 def load_file():
-	global current_file
+	global current_file, last_saved_content
 	mode = format_mode.get()
 	if mode == "Plaintext":
 		extension = ".txt"
@@ -85,13 +108,21 @@ def load_file():
 		notepad.delete("1.0", "end")
 		notepad.insert("1.0", content)
 		if mode == "Formatted":
-			format_from_md()		
+			format_from_md()
+		last_saved_content = notepad.get("1.0", "end-1c")
 		print(f"Loaded from {file_path}")
 		current_file = file_path
 		app.title(f"Novelistr - {os.path.basename(file_path)}")
 		save_recent_file(file_path)
 	else:
 		print("Load cancelled.")
+	ext = os.path.splitext(path)[1].lower()
+	if ext == ".md":
+		format_mode.set("Formatted")
+	else:
+		format_mode.set("Plaintext")
+	update_status_label()
+	notepad.edit_reset()
 
 def convert_to_md():
 	content = notepad.get("1.0", "end-1c")
@@ -138,6 +169,7 @@ def convert_to_md():
 	return "".join(output)
 
 def format_from_md():
+	notepad.edit_separator()
 	content = notepad.get("1.0", "end-1c")
 
 	# Patterns and tag names
@@ -169,6 +201,7 @@ def format_from_md():
 			end = f"{pos} + {len(marks)}c"
 			notepad.delete(pos, end)
 			start = pos  # now we're here
+	notepad.edit_separator()
 
 def scratch_formatting():
 	content = notepad.get("1.0", "end-1c")
@@ -185,14 +218,25 @@ def scratch_formatting():
 			notepad.delete(pos, end)
 			start = pos  # now we're here
 
+def key_toggle_format():
+	mode = format_mode.get()
+	if mode == "Formatted":
+		format_mode.set("Plaintext")
+	else:
+		format_mode.set("Formatted")
+	toggle_format_button()
+
 def toggle_format_button():
 	mode = format_mode.get()
 	if mode == "Formatted":
 		format_from_md()
-	else: 
+	else:
+		notepad.edit_separator()
 		content = convert_to_md()
 		notepad.delete("1.0", "end")
 		notepad.insert("1.0", content)
+		notepad.edit_separator()
+	update_status_label()
 
 def collapse_sidebar():
 	global sidebar_expanded, sidebar_width
@@ -307,7 +351,7 @@ def refresh_recent_files():
 	).pack(pady=8, padx=5)
 
 def open_recent_file(path):
-	global current_file
+	global current_file, last_saved_content
 	ext = os.path.splitext(path)[1].lower()
 	if ext == ".md":
 		format_mode.set("Formatted")
@@ -317,6 +361,7 @@ def open_recent_file(path):
 		content = f.read()
 	notepad.delete("1.0", "end")
 	notepad.insert("1.0", content)
+	last_saved_content = content
 	mode = format_mode.get()
 	if mode == "Formatted":
 		format_from_md()
@@ -338,6 +383,8 @@ def open_recent_file(path):
 	with open(".recent.txt", "w") as f:
 		json.dump(recent, f)
 	refresh_recent_files()
+	update_status_label()
+	notepad.edit_reset()
 
 def confirm_clear_recent_files():
 	dialog = ctk.CTkToplevel(app)
@@ -371,6 +418,29 @@ def toggle_tag(tag_name):
 			text_widget.tag_add(tag_name, start, end)
 	except:
 		pass
+
+def update_reports():
+	update_status_label()
+	update_saved_label()
+
+def update_status_label():
+	content = notepad.get("1.0", "end-1c")
+	mode = format_mode.get()
+	if mode == "Formatted":
+		# Word count for markdown/visual
+		word_count = len(content.split())
+		status_label.configure(text=f"Word count: {word_count}")
+	else:
+		# Line count for plaintext
+		line_count = int(notepad.index("end-1c").split(".")[0])
+		status_label.configure(text=f"Line count: {line_count}")
+
+def update_saved_label():
+	current = notepad.get("1.0", "end-1c")
+	if current != last_saved_content:
+		saved_label.configure(text="Unsaved")
+	else:
+		saved_label.configure(text="Saved")
 
 # ===== UI ===== #
 
@@ -409,13 +479,28 @@ filler.pack(side="bottom")
 recent_files_frame = ctk.CTkFrame(master=sidebar, fg_color=sidebar.cget("fg_color"))
 recent_files_frame.pack(fill="both", expand=False, pady=(2, 0))
 
-# ----- Example label in sidebar
-ctk.CTkLabel(sidebar, text="Sidebar Filler").pack(padx=10, pady=10)
+# ----- Data Report in sidebar
+status_label = ctk.CTkLabel(master=sidebar, text="Line count: 0")
+status_label.pack(side="bottom", padx=10, pady=5)
+saved_label = ctk.CTkLabel(master=sidebar, text="Saved")
+saved_label.pack(side="bottom", padx=10, pady=5)
 
 # ----- Text area
-notepad = ctk.CTkTextbox(master=app, wrap='word')
+notepad = ctk.CTkTextbox(master=app, undo=True, wrap='word')
 notepad.grid(row=1, column=1, sticky="nsew")
 notepad.focus_set()
+notepad.bind("<KeyRelease>", lambda event: update_reports())
+notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
+notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
+notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
+notepad.bind("<Control-m>", bind_and_block(lambda:key_toggle_format()))
+notepad.bind("<Control-z>", lambda event: notepad.edit_undo())
+notepad.bind("<Control-y>", lambda event: notepad.edit_redo())
+notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
+notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
+notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
+notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
+
 
 # ----- Defining fonts/tags
 text_widget = notepad._textbox
