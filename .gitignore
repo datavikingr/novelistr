@@ -1,2 +1,4 @@
 *.txt
 .git/*
+test.py
+*.md

@@ -3,7 +3,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
 import tkinter.font as tkFont
-import os, json
+import os, json, re
 
 # ===== INIT ===== #
 
@@ -31,19 +31,24 @@ def func_new():
 	app.title("Novelistr - new file")
 
 def on_closing():
-	if current_file:
-		with open(current_file, "w", encoding="utf-8") as f:
-			f.write(notepad.get("1.0", "end-1c"))
-		print(f"Autosaved to {current_file}")
+	save_file()
 	app.destroy()
 
-def func_save():
+def save_file():
 	global current_file
-	content = notepad.get("1.0", "end-1c")
+	mode = format_mode.get()
+	if mode == "Plaintext":
+		content = notepad.get("1.0", "end-1c")
+		extension = ".txt"
+		file_types = [("Text Files", "*.txt"), ("All Files", "*.*")]
+	elif mode == "Formatted":
+		content = convert_to_md()
+		extension = ".md"
+		file_types = [("Markdown Files", "*.md"), ("All Files", "*.*")]
 	if not current_file:
 		file_path = filedialog.asksaveasfilename(
-			defaultextension=".txt",
-			filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+			defaultextension=extension,
+			filetypes=file_types,
 			title="Save As"
 		)
 		if file_path:
@@ -51,20 +56,27 @@ def func_save():
 				f.write(content)
 			print(f"Saved to {file_path}")
 			current_file = file_path
+			app.title(f"Novelistr - {os.path.basename(file_path)}")
+			save_recent_file(file_path)
 		else:
 			print("Save cancelled.")
 	else:
 		file_path = current_file
 		with open(file_path, "w", encoding="utf-8") as f:
 			f.write(content)
-	app.title(f"Novelistr - {os.path.basename(file_path)}")
-	save_recent_file(file_path)
 
-def func_load():
+def load_file():
 	global current_file
+	mode = format_mode.get()
+	if mode == "Plaintext":
+		extension = ".txt"
+		file_types = [("Text Files", "*.txt"), ("All Files", "*.*")]
+	elif mode == "Formatted":
+		extension = ".md"
+		file_types = [("Markdown Files", "*.md"), ("All Files", "*.*")]
 	file_path = filedialog.askopenfilename(
-		defaultextension=".txt",
-		filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+		defaultextension=extension,
+		filetypes=file_types,
 		title="Open File"
 	)
 	if file_path:
@@ -72,12 +84,115 @@ def func_load():
 			content = f.read()
 		notepad.delete("1.0", "end")
 		notepad.insert("1.0", content)
+		if mode == "Formatted":
+			format_from_md()		
 		print(f"Loaded from {file_path}")
 		current_file = file_path
+		app.title(f"Novelistr - {os.path.basename(file_path)}")
+		save_recent_file(file_path)
 	else:
 		print("Load cancelled.")
-	app.title(f"Novelistr - {os.path.basename(file_path)}")
-	save_recent_file(file_path)
+
+def convert_to_md():
+	content = notepad.get("1.0", "end-1c")
+	output = list(content)
+	tag_priority = ["heading", "bold", "italic", "underline"]
+
+	def index_to_offset(widget, index):
+		lines = widget.get("1.0", index).splitlines(True)
+		return sum(len(line) for line in lines)
+
+	insertions = []  # Collect tuples of (offset, string)
+
+	for tag in tag_priority:
+		ranges = notepad.tag_ranges(tag)
+		for i in range(0, len(ranges), 2):
+			start = ranges[i]
+			end = ranges[i + 1]
+
+			start_idx = notepad.index(start)
+			end_idx = notepad.index(end)
+
+			start_offset = index_to_offset(notepad, start_idx)
+			end_offset = index_to_offset(notepad, end_idx)
+
+			# Tag-to-markdown syntax
+			if tag == "bold":
+				insertions.append((start_offset, "**"))
+				insertions.append((end_offset, "**"))
+			elif tag == "italic":
+				insertions.append((start_offset, "*"))
+				insertions.append((end_offset, "*"))
+			elif tag == "underline":
+				insertions.append((start_offset, "_"))
+				insertions.append((end_offset, "_"))
+			elif tag == "heading":
+				line_start = notepad.index(f"{start_idx} linestart")
+				if line_start == start_idx:
+					insertions.append((start_offset, "# "))
+
+	# Sort insertions in reverse so they don't affect each other's offsets
+	for offset, string in sorted(insertions, key=lambda x: -x[0]):
+		output.insert(offset, string)
+
+	return "".join(output)
+
+def format_from_md():
+	content = notepad.get("1.0", "end-1c")
+
+	# Patterns and tag names
+	patterns = {
+		"bold": r"\*\*(.*?)\*\*",
+		"italic": r"\*(.*?)\*",
+		"underline": r"_(.*?)_",
+		"heading": r"^# (.*?)$"
+	}
+
+	for tag, pattern in patterns.items():
+		for match in re.finditer(pattern, content, re.MULTILINE | re.DOTALL):
+			start_char = match.start(1)
+			end_char = match.end(1)
+
+			start_index = f"1.0 + {start_char} chars"
+			end_index = f"1.0 + {end_char} chars"
+
+			notepad.tag_add(tag, start_index, end_index)
+
+	formatting_marks = ["**", "# ", "*", "_"]
+
+	for marks in formatting_marks:
+		start = "1.0" # start from the bottem
+		while True:
+			pos = notepad.search(marks, start, stopindex="end", regexp=False)
+			if not pos:
+				break #gtfo
+			end = f"{pos} + {len(marks)}c"
+			notepad.delete(pos, end)
+			start = pos  # now we're here
+
+def scratch_formatting():
+	content = notepad.get("1.0", "end-1c")
+
+	formatting_marks = ["**", "# ", "*", "_"]
+
+	for marks in formatting_marks:
+		start = "1.0" # start from the bottem
+		while True:
+			pos = notepad.search(marks, start, stopindex="end", regexp=False)
+			if not pos:
+				break #gtfo
+			end = f"{pos} + {len(marks)}c"
+			notepad.delete(pos, end)
+			start = pos  # now we're here
+
+def toggle_format_button():
+	mode = format_mode.get()
+	if mode == "Formatted":
+		format_from_md()
+	else: 
+		content = convert_to_md()
+		notepad.delete("1.0", "end")
+		notepad.insert("1.0", content)
 
 def collapse_sidebar():
 	global sidebar_expanded, sidebar_width
@@ -193,10 +308,18 @@ def refresh_recent_files():
 
 def open_recent_file(path):
 	global current_file
+	ext = os.path.splitext(path)[1].lower()
+	if ext == ".md":
+		format_mode.set("Formatted")
+	else:
+		format_mode.set("Plaintext")
 	with open(path, "r", encoding="utf-8") as f:
 		content = f.read()
 	notepad.delete("1.0", "end")
 	notepad.insert("1.0", content)
+	mode = format_mode.get()
+	if mode == "Formatted":
+		format_from_md()
 	current_file = path
 	app.title(f"Novelistr - {os.path.basename(path)}")
 	try:
@@ -237,17 +360,17 @@ def confirm_clear_recent_files():
 	ctk.CTkButton(btn_frame, text="No", command=cancel, width=80).pack(side="right", padx=10)
 
 def toggle_tag(tag_name):
-    try:
-        start = text_widget.index("sel.first")
-        end = text_widget.index("sel.last")
+	try:
+		start = text_widget.index("sel.first")
+		end = text_widget.index("sel.last")
 
-        # Check if tag is already applied
-        if tag_name in text_widget.tag_names("sel.first"):
-            text_widget.tag_remove(tag_name, start, end)
-        else:
-            text_widget.tag_add(tag_name, start, end)
-    except:
-        pass
+		# Check if tag is already applied
+		if tag_name in text_widget.tag_names("sel.first"):
+			text_widget.tag_remove(tag_name, start, end)
+		else:
+			text_widget.tag_add(tag_name, start, end)
+	except:
+		pass
 
 # ===== UI ===== #
 
@@ -261,16 +384,21 @@ toggle_button.pack(side="left", padx=10, pady=10)
 new_button = ctk.CTkButton(master=toolbar, text="New", width=60, fg_color=toolbar.cget("fg_color"), command=func_new)
 new_button.pack(side="left", padx=5, pady=5)
 
-save_button = ctk.CTkButton(master=toolbar, text="Save", width=60, fg_color=toolbar.cget("fg_color"), command=func_save)
+save_button = ctk.CTkButton(master=toolbar, text="Save", width=60, fg_color=toolbar.cget("fg_color"), command=save_file)
 save_button.pack(side="left", padx=5, pady=5)
 
-load_button = ctk.CTkButton(master=toolbar, text="Load", width=60, fg_color=toolbar.cget("fg_color"), command=func_load)
+load_button = ctk.CTkButton(master=toolbar, text="Load", width=60, fg_color=toolbar.cget("fg_color"), command=load_file)
 load_button.pack(side="left", padx=5, pady=5)
 
 bold_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Bold", command=lambda: toggle_tag("bold")).pack(side="left", padx=5)
 italic_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Italic", command=lambda: toggle_tag("italic")).pack(side="left", padx=5)
 underline_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Underline", command=lambda: toggle_tag("underline")).pack(side="left", padx=5)
 heading_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Heading", command=lambda: toggle_tag("heading")).pack(side="left", padx=5)
+
+format_mode = ctk.StringVar(value="Plaintext")
+format_toggle = ctk.CTkSegmentedButton(master=toolbar, values=["Plaintext", "Formatted"], variable=format_mode)
+format_toggle.pack(side="right", padx=5, pady=5)
+format_mode.trace_add("write", lambda *args: toggle_format_button())
 
 # ----- Sidebar (Left: column=0) -----
 sidebar = ctk.CTkFrame(master=app)
