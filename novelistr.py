@@ -29,7 +29,6 @@ app_title = "Novelistr"
 current_app_title = app_title
 autosave_minutes = 1
 autosave_interval = autosave_minutes * 60 * 1000
-just_saved = False
 
 # ----- Functions and logic
 def bind_and_block(action):
@@ -61,7 +60,7 @@ def on_closing():
 	app.destroy()
 
 def save_file():
-	global current_file, last_saved_content, current_app_title, just_saved
+	global current_file, last_saved_content, current_app_title
 	mode = format_mode.get()
 	content = notepad.get("1.0", "end-1c")
 	if content != "":
@@ -98,7 +97,6 @@ def save_file():
 			app.title(current_app_title)
 		last_saved_content = content
 		saved_label.configure(text="Saved")
-		just_saved = True
 
 def autosave():
 	global last_saved_content
@@ -444,10 +442,6 @@ def toggle_tag(tag_name):
 		pass
 
 def update_reports():
-	global just_saved
-	if just_saved:
-		just_saved = False
-		return
 	update_status_label()
 	update_saved_label()
 
