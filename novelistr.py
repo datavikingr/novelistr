@@ -27,6 +27,9 @@ recent_label = None
 last_saved_content = None
 app_title = "Novelistr"
 current_app_title = app_title
+autosave_minutes = 1
+autosave_interval = autosave_minutes * 60 * 1000
+just_saved = False
 
 # ----- Functions and logic
 def bind_and_block(action):
@@ -58,7 +61,7 @@ def on_closing():
 	app.destroy()
 
 def save_file():
-	global current_file, last_saved_content, current_app_title
+	global current_file, last_saved_content, current_app_title, just_saved
 	mode = format_mode.get()
 	content = notepad.get("1.0", "end-1c")
 	if content != "":
@@ -95,6 +98,16 @@ def save_file():
 			app.title(current_app_title)
 		last_saved_content = content
 		saved_label.configure(text="Saved")
+		just_saved = True
+
+def autosave():
+	global last_saved_content
+	content = notepad.get("1.0", "end-1c")
+	if content != last_saved_content:
+		save_file()
+	saved_label.configure(text="Autosaved")
+	app.after(autosave_interval, autosave)
+
 
 def load_file():
 	global current_file, last_saved_content, current_app_title
@@ -431,6 +444,10 @@ def toggle_tag(tag_name):
 		pass
 
 def update_reports():
+	global just_saved
+	if just_saved:
+		just_saved = False
+		return
 	update_status_label()
 	update_saved_label()
 
@@ -504,7 +521,7 @@ saved_label.pack(side="bottom", padx=10, pady=5)
 notepad = ctk.CTkTextbox(master=app, undo=True, wrap='word')
 notepad.grid(row=1, column=1, sticky="nsew")
 notepad.focus_set()
-notepad.bind("<KeyRelease>", lambda event: update_reports())
+notepad.bind("<KeyRelease>", lambda event: app.after_idle(update_reports))
 
 # ----- Windows/Linux keybinds
 notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
@@ -555,4 +572,5 @@ text_widget.tag_configure("heading", font=heading_font)
 # ===== Main ===== #
 refresh_recent_files()
 app.protocol("WM_DELETE_WINDOW", on_closing)
+app.after(autosave_interval, autosave)
 app.mainloop()
