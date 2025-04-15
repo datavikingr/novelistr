@@ -7,18 +7,16 @@ import os, json, re, sys
 
 # ===== INIT ===== #
 
-ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
-ctk.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
-
-# ----- Configure App
+# Configure App
 app = ctk.CTk() # create CTk window like you do with the Tk window
 app.title("Novelistr")
-
-# ----- Configure grid layout: 2 rows, 2 columns
+# Theming
+ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
+# Configure grid layout: 2 rows, 2 columns
 app.grid_rowconfigure(1,weight=1)
 app.grid_columnconfigure(1, weight=1)
-
-# ----- Global variables
+# Global variables
 sidebar_expanded = True
 sidebar_width = 250
 how_recent = 25
@@ -30,11 +28,22 @@ current_app_title = app_title
 autosave_minutes = 1
 autosave_interval = autosave_minutes * 60 * 1000
 
-# ----- Functions and logic
-def bind_and_block(action):
-	return lambda e: (action(), "break")[1]
+# ===== Functions and Logic ===== #
 
-def func_new():
+#Application-wide behaviors
+
+def bind_and_block(action): #Disables non-standard keybind behaviors
+	return lambda e: (action(), "break")[1] 
+	#Surprisingly, a bunch of the 'normal' keybinds have non-standard default behavior
+	#inside the text box element. This function disables the non-standard behaviors
+
+def on_closing(): #autosave on close
+	save_file()
+	app.destroy()
+
+#Top toolbar and its related functions
+
+def func_new(): #New File button
 	dialog = ctk.CTkToplevel(app)
 	dialog.title("Confirm New File")
 	dialog.geometry("300x120")
@@ -55,11 +64,7 @@ def func_new():
 	ctk.CTkButton(btn_frame, text="Yes", command=confirm, width=80).pack(side="left", padx=10)
 	ctk.CTkButton(btn_frame, text="No", command=cancel, width=80).pack(side="right", padx=10)
 
-def on_closing():
-	save_file()
-	app.destroy()
-
-def save_file():
+def save_file(): #Save File Button
 	global current_file, last_saved_content, current_app_title
 	mode = format_mode.get()
 	content = notepad.get("1.0", "end-1c")
@@ -98,7 +103,7 @@ def save_file():
 		last_saved_content = content
 		saved_label.configure(text="Saved")
 
-def autosave():
+def autosave(): #Autosave feature
 	global last_saved_content
 	content = notepad.get("1.0", "end-1c")
 	if content != last_saved_content:
@@ -106,8 +111,7 @@ def autosave():
 	saved_label.configure(text="Autosaved")
 	app.after(autosave_interval, autosave)
 
-
-def load_file():
+def load_file(): #Load File Button
 	global current_file, last_saved_content, current_app_title
 	mode = format_mode.get()
 	if mode == "Plaintext":
@@ -144,7 +148,7 @@ def load_file():
 	update_status_label()
 	notepad.edit_reset()
 
-def convert_to_md():
+def convert_to_md(): #plaintext-formatted >> MD, used in saving & mode-toggling
 	content = notepad.get("1.0", "end-1c")
 	output = list(content)
 	tag_priority = ["heading", "bold", "italic", "underline"]
@@ -188,7 +192,7 @@ def convert_to_md():
 
 	return "".join(output)
 
-def format_from_md():
+def format_from_md(): #MD >> plaintext-formatted, used in loading & mode-toggling
 	notepad.edit_separator()
 	content = notepad.get("1.0", "end-1c")
 
@@ -223,7 +227,20 @@ def format_from_md():
 			start = pos  # now we're here
 	notepad.edit_separator()
 
-def scratch_formatting():
+def toggle_tag(tag_name): #The formatting buttons
+	try:
+		start = text_widget.index("sel.first")
+		end = text_widget.index("sel.last")
+
+		# Check if tag is already applied
+		if tag_name in text_widget.tag_names("sel.first"):
+			text_widget.tag_remove(tag_name, start, end)
+		else:
+			text_widget.tag_add(tag_name, start, end)
+	except:
+		pass
+
+def scratch_formatting(): #Unused
 	content = notepad.get("1.0", "end-1c")
 
 	formatting_marks = ["**", "# ", "*", "_"]
@@ -238,7 +255,7 @@ def scratch_formatting():
 			notepad.delete(pos, end)
 			start = pos  # now we're here
 
-def key_toggle_format():
+def key_toggle_format(): #keybind for mode-toggling
 	mode = format_mode.get()
 	if mode == "Formatted":
 		format_mode.set("Plaintext")
@@ -246,7 +263,7 @@ def key_toggle_format():
 		format_mode.set("Formatted")
 	toggle_format_button()
 
-def toggle_format_button():
+def toggle_format_button(): #The plaintext/formatted mode toggle switch
 	mode = format_mode.get()
 	if mode == "Formatted":
 		format_from_md()
@@ -258,7 +275,9 @@ def toggle_format_button():
 		notepad.edit_separator()
 	update_status_label()
 
-def collapse_sidebar():
+#Left sidebar and its related functions
+
+def collapse_sidebar(): #Hamburger button
 	global sidebar_expanded, sidebar_width
 	if sidebar_expanded:
 		sidebar.grid_remove()
@@ -266,7 +285,7 @@ def collapse_sidebar():
 		sidebar.grid(row=1, column=0, sticky="ns")
 	sidebar_expanded = not sidebar_expanded
 
-def save_recent_file(path):
+def save_recent_file(path): #Save the recent files list, then calls refresh_recent_files()
 	try:
 		with open(".recent.txt", "r") as f:
 			recent = json.load(f)
@@ -287,7 +306,7 @@ def save_recent_file(path):
 		json.dump(recent, f)
 	refresh_recent_files()
 
-def refresh_recent_files():
+def refresh_recent_files(): #Refreshes the display of the recent files list
 	for widget in recent_files_frame.winfo_children():
 		widget.destroy()
 	try:
@@ -370,7 +389,7 @@ def refresh_recent_files():
 		command=confirm_clear_recent_files
 	).pack(pady=8, padx=5)
 
-def open_recent_file(path):
+def open_recent_file(path): #When selecting a recent file, load the file, update the list
 	global current_file, last_saved_content, current_app_title
 	save_file()
 	ext = os.path.splitext(path)[1].lower()
@@ -408,7 +427,7 @@ def open_recent_file(path):
 	update_status_label()
 	notepad.edit_reset()
 
-def confirm_clear_recent_files():
+def confirm_clear_recent_files(): #Confirms and clears the recent file list
 	dialog = ctk.CTkToplevel(app)
 	dialog.title("Confirm Clear")
 	dialog.geometry("300x120")
@@ -428,24 +447,11 @@ def confirm_clear_recent_files():
 	ctk.CTkButton(btn_frame, text="Yes", command=confirm, width=80).pack(side="left", padx=10)
 	ctk.CTkButton(btn_frame, text="No", command=cancel, width=80).pack(side="right", padx=10)
 
-def toggle_tag(tag_name):
-	try:
-		start = text_widget.index("sel.first")
-		end = text_widget.index("sel.last")
-
-		# Check if tag is already applied
-		if tag_name in text_widget.tag_names("sel.first"):
-			text_widget.tag_remove(tag_name, start, end)
-		else:
-			text_widget.tag_add(tag_name, start, end)
-	except:
-		pass
-
-def update_reports():
+def update_reports(): #Update status indicators
 	update_status_label()
 	update_saved_label()
 
-def update_status_label():
+def update_status_label(): #Line or Word count, depending on formatted/plaintext mode
 	content = notepad.get("1.0", "end-1c")
 	mode = format_mode.get()
 	if mode == "Formatted":
@@ -457,7 +463,7 @@ def update_status_label():
 		line_count = int(notepad.index("end-1c").split(".")[0])
 		status_label.configure(text=f"Line count: {line_count}")
 
-def update_saved_label():
+def update_saved_label(): #Saved/Unsaved/Autosaved label
 	global last_saved_content, current_app_title
 	content = notepad.get("1.0", "end-1c")
 	if content != last_saved_content:
@@ -470,54 +476,54 @@ def update_saved_label():
 
 # ===== UI ===== #
 
-# ----- Toolbar (Top: row=0, spans both columns) -----
+#Toolbar (Top: row=0, spans both columns), and related buttons
 toolbar = ctk.CTkFrame(master=app, height=50)
 toolbar.grid(row=0, column=0, columnspan=2, sticky="ew")
-
+#Hamburger button
 toggle_button = ctk.CTkButton(toolbar, text="☰", width=40,command=collapse_sidebar)
 toggle_button.pack(side="left", padx=10, pady=10)
-
+#File management buttons
 new_button = ctk.CTkButton(master=toolbar, text="New", width=60, fg_color=toolbar.cget("fg_color"), command=func_new)
 new_button.pack(side="left", padx=5, pady=5)
-
 save_button = ctk.CTkButton(master=toolbar, text="Save", width=60, fg_color=toolbar.cget("fg_color"), command=save_file)
 save_button.pack(side="left", padx=5, pady=5)
-
 load_button = ctk.CTkButton(master=toolbar, text="Load", width=60, fg_color=toolbar.cget("fg_color"), command=load_file)
 load_button.pack(side="left", padx=5, pady=5)
-
+#Formatting buttons
 bold_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Bold", command=lambda: toggle_tag("bold")).pack(side="left", padx=5)
 italic_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Italic", command=lambda: toggle_tag("italic")).pack(side="left", padx=5)
 underline_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Underline", command=lambda: toggle_tag("underline")).pack(side="left", padx=5)
 heading_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Heading", command=lambda: toggle_tag("heading")).pack(side="left", padx=5)
-
+#Plaintext/Formatted toggle switch
 format_mode = ctk.StringVar(value="Plaintext")
 format_toggle = ctk.CTkSegmentedButton(master=toolbar, values=["Plaintext", "Formatted"], variable=format_mode)
 format_toggle.pack(side="right", padx=5, pady=5)
 format_mode.trace_add("write", lambda *args: toggle_format_button())
 
-# ----- Sidebar (Left: column=0) -----
+#Sidebar (Left: column=0), related buttons/data
 sidebar = ctk.CTkFrame(master=app)
 sidebar.grid(row=1, column=0, sticky="ns")
+#Recent Files List
 recent_label = ctk.CTkLabel(master=sidebar, text="Recent Files:",anchor="w",font=ctk.CTkFont(size=16, weight="bold")).pack(padx=5, pady=5, anchor="w")
 filler = ctk.CTkLabel(sidebar, text="", height=1, width=sidebar_width)
 filler.pack(side="bottom")
 recent_files_frame = ctk.CTkFrame(master=sidebar, fg_color=sidebar.cget("fg_color"))
 recent_files_frame.pack(fill="both", expand=False, pady=(2, 0))
-
-# ----- Data Report in sidebar
+#Sidebar labels
 status_label = ctk.CTkLabel(master=sidebar, text="Line count: 0")
 status_label.pack(side="bottom", padx=10, pady=5)
 saved_label = ctk.CTkLabel(master=sidebar, text="Saved")
 saved_label.pack(side="bottom", padx=10, pady=5)
 
-# ----- Text area
+#Text area
 notepad = ctk.CTkTextbox(master=app, undo=True, wrap='word')
 notepad.grid(row=1, column=1, sticky="nsew")
 notepad.focus_set()
 notepad.bind("<KeyRelease>", lambda event: app.after_idle(update_reports))
 
-# ----- Windows/Linux keybinds
+# ===== Keybinds ===== #
+
+#Windows/Linux
 notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
 notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
 notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
@@ -528,8 +534,7 @@ notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
 notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
 notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
 notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
-
-# ----- Mac keybinds
+#Mac
 notepad.bind("<Command-n>", bind_and_block(lambda: func_new()))
 notepad.bind("<Command-s>", bind_and_block(lambda:save_file()))
 notepad.bind("<Command-o>", bind_and_block(lambda:load_file()))
@@ -542,21 +547,20 @@ notepad.bind("<Command-u>", bind_and_block(lambda:toggle_tag("underline")))
 notepad.bind("<Command-h>", bind_and_block(lambda:toggle_tag("heading")))
 
 
-# ----- Defining fonts/tags
+# ===== Text Area Fromatting ===== #
 text_widget = notepad._textbox
-
+#bold
 bold_font = tkFont.Font(text_widget, text_widget.cget("font"))
 bold_font.configure(weight="bold")
-
+#italic
 italic_font = tkFont.Font(text_widget, text_widget.cget("font"))
 italic_font.configure(slant="italic")
-
+#underline
 underline_font = tkFont.Font(text_widget, text_widget.cget("font"))
 underline_font.configure(underline=True)
-
+#heading
 heading_font = tkFont.Font(text_widget, text_widget.cget("font"))
 heading_font.configure(size=18, weight="bold")
-
 # Configure tags
 text_widget.tag_configure("bold", font=bold_font)
 text_widget.tag_configure("italic", font=italic_font)
@@ -564,6 +568,7 @@ text_widget.tag_configure("underline", font=underline_font)
 text_widget.tag_configure("heading", font=heading_font)
 
 # ===== Main ===== #
+
 refresh_recent_files()
 app.protocol("WM_DELETE_WINDOW", on_closing)
 app.after(autosave_interval, autosave)
