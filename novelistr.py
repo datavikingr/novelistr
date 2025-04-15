@@ -7,16 +7,16 @@ import os, json, re, sys
 
 # ===== INIT ===== #
 
-# Configure App
+#Configure App
 app = ctk.CTk() # create CTk window like you do with the Tk window
 app.title("Novelistr")
-# Theming
+#Application Theming
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
-# Configure grid layout: 2 rows, 2 columns
+#Configure grid layout: 2 rows, 2 columns
 app.grid_rowconfigure(1,weight=1)
 app.grid_columnconfigure(1, weight=1)
-# Global variables
+#Global variables
 sidebar_expanded = True
 sidebar_width = 250
 how_recent = 25
@@ -27,6 +27,7 @@ app_title = "Novelistr"
 current_app_title = app_title
 autosave_minutes = 1
 autosave_interval = autosave_minutes * 60 * 1000
+font_size_var = ctk.StringVar(value="14")
 
 # ===== Functions and Logic ===== #
 
@@ -227,7 +228,7 @@ def format_from_md(): #MD >> plaintext-formatted, used in loading & mode-togglin
 			start = pos  # now we're here
 	notepad.edit_separator()
 
-def toggle_tag(tag_name): #The formatting buttons
+def toggle_tag(tag_name): #The formatting buttons: Bold, Italic, Underline, Heading and applying them to the text
 	try:
 		start = text_widget.index("sel.first")
 		end = text_widget.index("sel.last")
@@ -239,6 +240,10 @@ def toggle_tag(tag_name): #The formatting buttons
 			text_widget.tag_add(tag_name, start, end)
 	except:
 		pass
+
+def update_font_size(choice): #Font size; unused
+	new_font = ctk.CTkFont(family="Roboto", size=int(choice))
+	notepad.configure(font=new_font)
 
 def scratch_formatting(): #Unused
 	content = notepad.get("1.0", "end-1c")
@@ -494,7 +499,8 @@ bold_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_
 italic_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Italic", command=lambda: toggle_tag("italic")).pack(side="left", padx=5)
 underline_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Underline", command=lambda: toggle_tag("underline")).pack(side="left", padx=5)
 heading_button = ctk.CTkButton(master=toolbar, width=60, fg_color=toolbar.cget("fg_color"), text="Heading", command=lambda: toggle_tag("heading")).pack(side="left", padx=5)
-#Plaintext/Formatted toggle switch
+#font_menu = ctk.CTkOptionMenu(master=toolbar,variable=font_size_var,values=["12", "14", "16", "18", "20", "24", "28"],command=update_font_size).pack(side="left", padx=5)
+#Plaintext/Formatted toggle switch, all the way on the right
 format_mode = ctk.StringVar(value="Plaintext")
 format_toggle = ctk.CTkSegmentedButton(master=toolbar, values=["Plaintext", "Formatted"], variable=format_mode)
 format_toggle.pack(side="right", padx=5, pady=5)
