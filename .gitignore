@@ -6,6 +6,7 @@
 /dist/
 *.spec
 .venv/
+/packaging/
 
 # Logs and test files
 *.log
