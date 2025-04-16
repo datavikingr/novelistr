@@ -465,12 +465,18 @@ def main():
 	app_data_dir = Path.home() / ".novelistr"
 	app_data_dir.mkdir(exist_ok=True)
 	recent_file = app_data_dir / "recent.json"
+	#Build/PyInstaller Help
+	if getattr(sys, 'frozen', False):
+		BASE_DIR = Path(sys._MEIPASS)
+	else:
+		BASE_DIR = Path(__file__).parent
+	icon_path = BASE_DIR / "assets" / "icon_32x32.png"
 	#Configure App
 	app = ctk.CTk() # create CTk window like you do with the Tk window
 	app.title("Novelistr")
 	app.geometry("1280x800")
 	app.minsize(800, 600)
-	app.iconphoto(True, PhotoImage(file="assets/icon_32x32.png"))  # cross-platform
+	app.iconphoto(True, PhotoImage(file=icon_path))  # cross-platform
 	#Application Theming
 	ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
 	ctk.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green

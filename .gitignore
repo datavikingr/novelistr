@@ -1,4 +1,12 @@
-*.txt
+# Git files
 .git/*
+
+# Python & PyInstaller output
+/build/
+/dist/
+*.spec
+.venv/
+
+# Logs and test files
+*.log
 test.py
-*.md
