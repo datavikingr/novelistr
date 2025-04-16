@@ -1,7 +1,7 @@
 # Git files
 .git/*
 
-# Python & PyInstaller output
+# Packaging, Tooling, and PyInstaller outputs
 /build/
 /dist/
 *.spec
