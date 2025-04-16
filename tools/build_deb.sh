@@ -97,5 +97,5 @@ echo "Building package..."
 dpkg-deb --build "$DEB_DIR"
 
 # Rename for clarity
-mv "$DEB_DIR.deb" "$BUILD_DIR/${APP_NAME}_${VERSION}_${ARCH}.deb"
+mv "$DEB_DIR.deb" "dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
 echo "Done! .deb created at $BUILD_DIR/${APP_NAME}_${VERSION}_${ARCH}.deb"
