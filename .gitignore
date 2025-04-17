@@ -8,6 +8,16 @@
 .venv/
 /packaging/
 
+# Flatpak build directory
+.flatpak-builder/
+*.flatpak
+*.flatpakref
+*.flatpakrepo
+flatpak/.flatpak-builder/
+flatpak/build/
+flatpak/export/
+flatpak/files/.flatpak-builder/
+
 # Logs and test files
 *.log
 test.py

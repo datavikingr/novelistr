@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Novelistr
+Exec=flatpak run com.novelistr.app
+Icon=com.novelistr.app
+Comment=Distraction-free editor for Markdown and plaintext and novel writing
+Categories=Utility;TextEditor;
+StartupWMClass=Novelistr
+Terminal=false

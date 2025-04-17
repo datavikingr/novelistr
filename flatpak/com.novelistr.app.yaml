@@ -1,0 +1,19 @@
+app-id: com.novelistr.app
+runtime: org.freedesktop.Platform
+runtime-version: "23.08"
+sdk: org.freedesktop.Sdk
+command: novelistr
+finish-args:
+  - --socket=x11
+  - --socket=wayland
+  - --filesystem=home
+  - --env=PYTHONUTF8=1
+
+modules:
+  - name: novelistr
+    buildsystem: simple
+    build-commands:
+      - install -D dist/novelistr /app/bin/novelistr
+    sources:
+      - type: dir
+        path: ../

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Requires PyInstaller; `pip install pyinstaller`
+
 # Run this when I've updated the code inside novelistr.py
 # This builds a new standalone binary.
 # It outputs the binary to dist/novelistr

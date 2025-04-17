@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# <Directions go here>
+# Run after newbinary.sh; requires dpkg. If on Fedora/etc, run `sudo dnf install dpkg -y`; yes, really.
+# Outputs to dist/novelistr_X.X.X_amd64.deb
+#NOTE: Don't forget the --bump syntax!
 
 set -e
 
@@ -41,7 +43,7 @@ ARCH="amd64"
 BUILD_DIR="packaging"
 DEB_DIR="$BUILD_DIR/${APP_NAME}-deb" #packaging/novelistr-deb
 BIN_SRC="dist/$APP_NAME" #dist/novelistr
-ICON_SRC="assets/icon_32x32.png"
+ICON_SRC="assets/icon_64x64.png"
 DESKTOP_FILE="$DEB_DIR/usr/share/applications/$APP_NAME.desktop" #packaging/novelistr-deb/usr/share/applications/novelistr.desktop
 CONTROL_FILE="$DEB_DIR/DEBIAN/control" #packaging/novelistr-deb/DEBIAN/control
 
@@ -52,7 +54,7 @@ rm -rf "$DEB_DIR" # nukes packaging/novelistr-deb
 mkdir -p "$DEB_DIR/DEBIAN" #rebuilds packaging/novelistr-deb/DEBIAN
 mkdir -p "$DEB_DIR/usr/bin" #rebuilds packaging/novelistr-deb/usr/bin
 mkdir -p "$DEB_DIR/usr/share/applications" #rebuilds packaging/novelistr-deb/usr/share/applications
-mkdir -p "$DEB_DIR/usr/share/icons/hicolor/32x32/apps" #rebuilds packaging/novelistr-deb/usr/share/icons/hicolor/32x32/apps
+mkdir -p "$DEB_DIR/usr/share/icons/hicolor/64x64/apps" #rebuilds packaging/novelistr-deb/usr/share/icons/hicolor/32x32/apps
 
 echo "Copying binary..."
 
@@ -61,7 +63,7 @@ cp "$BIN_SRC" "$DEB_DIR/usr/bin/$APP_NAME" #cp dist/novelistr packaging/novelist
 chmod +x "$DEB_DIR/usr/bin/$APP_NAME" #makes executable
 
 # Copy icon
-cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/32x32/apps/$APP_NAME.png" #cp assets/icon_32x32.png packaging/novelistr-deb/usr/share/icons/hicolor/32x32/apps/novelistr.png
+cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/64x64/apps/$APP_NAME.png" #cp assets/icon_32x32.png packaging/novelistr-deb/usr/share/icons/hicolor/32x32/apps/novelistr.png
 
 echo "Building .desktop file..."
 

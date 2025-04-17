@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.novelistr.app</id>
+  <name>Novelistr</name>
+  <summary>Distraction-free editor for Markdown and novel writing</summary>
+
+  <description>
+    <p>
+      Novelistr is a minimalist writing app designed for authors, developers, and anyone who wants to focus. 
+      It supports Markdown formatting, autosave, a recent file sidebar, theming, and keybind-driven editing.
+    </p>
+    <p>
+      Toggle between plaintext and Markdown modes with a single click. 
+      Organize and revisit recent work. Fully keyboard-navigable. Designed for distraction-free creativity.
+    </p>
+  </description>
+
+  <developer_name>Alex Haskins</developer_name>
+  <launchable type="desktop-id">com.novelistr.app.desktop</launchable>
+  <url type="homepage">https://github.com/DataVikingr/novelistr</url>
+  <url type="bugtracker">https://github.com/DataVikingr/novelistr/issues</url>
+  <project_license>MIT</project_license>
+  <metadata_license>CC0-1.0</metadata_license>
+
+  <provides>
+    <binary>novelistr</binary>
+  </provides>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/datavikingr/novelistr/blob/main/image.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.0" date="2025-04-15">
+      <description>Initial public release of Novelistr.</description>
+    </release>
+  </releases>
+
+</component>
