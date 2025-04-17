@@ -2,6 +2,11 @@
 
 set -e
 
+LOG_DATE=$(date +"%Y.%m.%d.%H.%M")
+LOG_NAME="build_${LOG_DATE}"
+mkdir -p "logs"
+exec > >(tee "logs/${LOG_NAME}.log") 2>&1
+
 # =======================
 # CONFIG & VERSION BUMP
 # =======================
@@ -16,10 +21,6 @@ CHANGELOG_FILE="$ROOT_DIR/changelog.txt"
 
 BUILD_DATE=$(date +"%Y-%m-%d_%H-%M")
 METAINFO_FILE="flatpak/files/share/metainfo/com.novelistr.app.metainfo.xml"
-
-LOG_DATE=$(date +"%Y.%m.%d.%H.%M")
-LOG_NAME="logs/build_${BUILD_DATE}.log"
-touch "logs/${LOG_NAME}"
 
 if [[ "$1" =~ ^--bump(=major|=minor|=patch)?$ ]]; then
   if [[ ! -f "$VERSION_FILE" ]]; then
@@ -48,12 +49,12 @@ fi
 # PYINSTALLER BUILD
 # =======================
 
-echo "\n=== Building PyInstaller binary ==="
+echo "=== Building PyInstaller binary ==="
 pyinstaller --onefile --noconfirm --windowed \
   --icon=assets/icon_64x64.png \
   --add-data "assets:assets" \
   --hidden-import=customtkinter \
-  novelistr.py | tee -a "logs/${LOG_NAME}"
+  novelistr.py
 
 rm -rf build/ *.spec
 
@@ -61,7 +62,7 @@ rm -rf build/ *.spec
 # DEB PACKAGE
 # =======================
 
-echo "\n=== Building .deb package ==="
+echo "=== Building .deb package ==="
 VERSION=$(cat "$VERSION_FILE")
 ARCH="amd64"
 BUILD_DIR="packaging"
@@ -104,7 +105,7 @@ Description: Novelistr - A dark-mode, markdown-friendly writing editor
  A minimalist writing tool with formatting support, autosave, and recent file tracking.
 EOF
 
-dpkg-deb --build "$DEB_DIR"  | tee -a "logs/${LOG_NAME}"
+dpkg-deb --build "$DEB_DIR"
 mv "$DEB_DIR.deb" "dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
 rm -rf "$DEB_DIR"
 echo ".deb file created at dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
@@ -113,7 +114,7 @@ echo ".deb file created at dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
 # FLATPAK BUNDLE
 # =======================
 
-echo "\n=== Building Flatpak ==="
+echo "=== Building Flatpak ==="
 FLATPAK_APP_ID="com.novelistr.app"
 FLATPAK_MANIFEST="flatpak/${FLATPAK_APP_ID}.yaml"
 FLATPAK_BUILD_DIR="flatpak-build"
@@ -123,14 +124,14 @@ FLATPAK_BUNDLE_NAME="novelistr.flatpak"
 rm -rf "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR"
 
 flatpak-builder --force-clean --repo="$FLATPAK_REPO_DIR" \
-  "$FLATPAK_BUILD_DIR" "$FLATPAK_MANIFEST" | tee -a "logs/${LOG_NAME}"
+  "$FLATPAK_BUILD_DIR" "$FLATPAK_MANIFEST"
 
 flatpak build-bundle "$FLATPAK_REPO_DIR" "dist/$FLATPAK_BUNDLE_NAME" "$FLATPAK_APP_ID"
 echo "Flatpak bundle created at dist/$FLATPAK_BUNDLE_NAME"
 
-rm -rf .flatpak-builder "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR"
+rm -rf .flatpak-builder build-dir "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR"
 
 # =======================
 # ALL DONE
 # =======================
-echo "\n🎉 All builds complete! Distributables available in ./dist/"
+echo "🎉 All builds complete! Distributables available in ./dist/"
