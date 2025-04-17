@@ -17,6 +17,8 @@ flatpak/.flatpak-builder/
 flatpak/build/
 flatpak/export/
 flatpak/files/.flatpak-builder/
+repo/
+build-dir/
 
 # Logs and test files
 *.log
