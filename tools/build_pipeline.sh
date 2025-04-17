@@ -19,6 +19,7 @@ METAINFO_FILE="flatpak/files/share/metainfo/com.novelistr.app.metainfo.xml"
 
 LOG_DATE=$(date +"%Y.%m.%d.%H.%M")
 LOG_NAME="logs/build_${BUILD_DATE}.log"
+touch "logs/${LOG_NAME}"
 
 if [[ "$1" =~ ^--bump(=major|=minor|=patch)?$ ]]; then
   if [[ ! -f "$VERSION_FILE" ]]; then
