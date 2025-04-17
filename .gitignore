@@ -22,4 +22,5 @@ build-dir/
 
 # Logs and test files
 *.log
-test.py
+test.*
+logs/

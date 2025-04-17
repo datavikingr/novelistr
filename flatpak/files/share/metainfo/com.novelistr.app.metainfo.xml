@@ -7,11 +7,11 @@
   <description>
     <p>
       Novelistr is a minimalist writing app designed for authors, developers, and anyone who wants to focus. 
-      It supports Markdown formatting, autosave, a recent file sidebar, theming, and keybind-driven editing.
+      It supports plain text and Markdown formatting, autosave, a recent file sidebar, and keybind-driven editing.
     </p>
     <p>
-      Toggle between plaintext and Markdown modes with a single click. 
-      Organize and revisit recent work. Fully keyboard-navigable. Designed for distraction-free creativity.
+      Toggle between plaintext and Markdown modes with a single click or keybind (ctrl+m/cmd+m). 
+      Organize and revisit recent work. Fully keyboard-navigable. Designed for distraction-free creativity or productivity.
     </p>
   </description>
 
@@ -33,7 +33,7 @@
   </screenshots>
 
   <releases>
-    <release version="1.0.0" date="2025-04-15">
+    <release version="1.0.0" date="2025-04-17">
       <description>Initial public release of Novelistr.</description>
     </release>
   </releases>
