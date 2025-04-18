@@ -1,9 +1,6 @@
 name: Windows EXE Build
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -31,10 +28,16 @@ jobs:
             --icon=assets/icon_256x256.ico `
             --add-data "assets;assets" `
             --hidden-import=customtkinter `
-            novelistr.py
+            novelistr.py > build_log.txt 2>&1
 
       - name: 📤 Upload .exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: novelistr-windows
           path: dist/novelistr.exe
+      
+      - name: 📤 Upload build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-log
+          path: win_log.txt

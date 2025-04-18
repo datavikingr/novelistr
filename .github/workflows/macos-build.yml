@@ -1,9 +1,6 @@
 name: macOS App Build
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -31,10 +28,16 @@ jobs:
             --icon=assets/icon_256x256.icns \
             --add-data "assets:assets" \
             --hidden-import=customtkinter \
-            novelistr.py
+            novelistr.py > build_log.txt 2>&1
 
       - name: 📤 Upload .app bundle
         uses: actions/upload-artifact@v4
         with:
           name: novelistr-macos
           path: dist/novelistr.app
+      
+      - name: 📤 Upload build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-log
+          path: mac_log.txt

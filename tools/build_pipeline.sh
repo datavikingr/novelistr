@@ -162,6 +162,62 @@ if [[ -n "$changelog_msg" ]]; then
 fi
 
 # =======================
+# GITHUB ACTIONS - WINDOWS
+# =======================
+
+echo "=== Building Windows Executable ==="
+echo "🔁 Triggering Windows workflow..."
+gh workflow run windows-build.yml
+
+sleep 5
+
+echo "⏳ Waiting for the latest Windows workflow to appear..."
+LATEST_RUN_ID=""
+while [[ -z "$LATEST_RUN_ID" ]]; do
+  LATEST_RUN_ID=$(gh run list --workflow windows-build.yml --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+  sleep 2
+done
+
+echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
+gh run watch "$LATEST_RUN_ID"
+
+echo "⬇️ Downloading build artifact(s)..."
+gh run download "$LATEST_RUN_ID" --dir "dist"
+
+cat dist/win_log.txt >> "logs/${LOG_NAME}.log"
+rm dist/win_log.txt
+
+echo "✅ Windows build complete!"
+
+# =======================
+# GITHUB ACTIONS - MAC
+# =======================
+
+echo "=== Building OSX Executable ==="
+echo "🔁 Triggering MacOS workflow..."
+gh workflow run macos-build.yml
+
+sleep 5
+
+echo "⏳ Waiting for the latest MacOS workflow to appear..."
+LATEST_RUN_ID=""
+while [[ -z "$LATEST_RUN_ID" ]]; do
+  LATEST_RUN_ID=$(gh run list --workflow macos-build.yml --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+  sleep 2
+done
+
+echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
+gh run watch "$LATEST_RUN_ID"
+
+echo "⬇️ Downloading build artifact(s)..."
+gh run download "$LATEST_RUN_ID" --dir "dist"
+
+cat dist/mac_log.txt >> "logs/${LOG_NAME}.log"
+rm dist/mac_log.txt
+
+echo "✅ MacOS build complete!"
+
+# =======================
 # ALL DONE
 # =======================
 echo "🎉 All builds complete! Distributables available in ./dist/"
