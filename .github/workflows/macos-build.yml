@@ -27,8 +27,8 @@ jobs:
 
       - name: 🍏 Build macOS .app with PyInstaller
         run: |
-          pyinstaller --noconfirm --windowed ^
-            --icon=assets/icon_64x64.png \
+          pyinstaller --noconfirm --windowed \
+            --icon=assets/icon_256x256.icns \
             --add-data "assets:assets" \
             --hidden-import=customtkinter \
             novelistr.py

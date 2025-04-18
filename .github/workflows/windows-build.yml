@@ -28,7 +28,7 @@ jobs:
       - name: 📁 Build EXE with PyInstaller
         run: |
           pyinstaller --onefile --noconfirm --windowed `
-            --icon=assets/icon_64x64.ico `
+            --icon=assets/icon_256x256.ico `
             --add-data "assets;assets" `
             --hidden-import=customtkinter `
             novelistr.py

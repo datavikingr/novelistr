@@ -54,7 +54,7 @@ fi
 
 echo "=== Building PyInstaller binary ==="
 pyinstaller --onefile --noconfirm --windowed \
-  --icon=assets/icon_64x64.png \
+  --icon=assets/icon_256x256.png \
   --add-data "assets:assets" \
   --hidden-import=customtkinter \
   novelistr.py
@@ -71,7 +71,7 @@ ARCH="amd64"
 BUILD_DIR="packaging"
 DEB_DIR="$BUILD_DIR/${APP_NAME}-deb" #packaging/novelistr-deb
 BIN_SRC="dist/$APP_NAME" #dist/novelistr
-ICON_SRC="assets/icon_64x64.png"
+ICON_SRC="assets/icon_256x256.png"
 DESKTOP_FILE="$DEB_DIR/usr/share/applications/$APP_NAME.desktop" #packaging/novelistr-deb/usr/share/applications/novelistr.desktop
 CONTROL_FILE="$DEB_DIR/DEBIAN/control" #packaging/novelistr-deb/DEBIAN/control
 
@@ -83,7 +83,7 @@ mkdir -p "$DEB_DIR/usr/share/icons/hicolor/64x64/apps" #rebuilds packaging/novel
 
 cp "$BIN_SRC" "$DEB_DIR/usr/bin/$APP_NAME" #cp dist/novelistr packaging/novelistr-deb/usr/bin/novelistr
 chmod +x "$DEB_DIR/usr/bin/$APP_NAME" #makes executable
-cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/64x64/apps/$APP_NAME.png" #cp assets/icon_64x64.png packaging/novelistr-deb/usr/share/icons/hicolor/64x64/apps/novelistr.png
+cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png" #cp assets/icon_64x64.png packaging/novelistr-deb/usr/share/icons/hicolor/64x64/apps/novelistr.png
 
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
