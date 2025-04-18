@@ -34,7 +34,7 @@ jobs:
             novelistr.py
 
       - name: 📤 Upload .app bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: novelistr-macos
           path: dist/novelistr.app

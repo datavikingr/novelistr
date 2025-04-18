@@ -34,7 +34,7 @@ jobs:
             novelistr.py
 
       - name: 📤 Upload .exe artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: novelistr-windows
           path: dist/novelistr.exe
