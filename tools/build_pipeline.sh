@@ -135,6 +135,33 @@ echo "Flatpak bundle created at dist/$FLATPAK_BUNDLE_NAME"
 rm -rf .flatpak-builder build-dir "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR" repo
 
 # =======================
+# GIT COMMIT & TAG (if changelog_msg exists; and if it does, we're triggering GitHub workflows)
+# =======================
+if [[ -n "$changelog_msg" ]]; then
+  echo "=== Committing and tagging for version v$NEW_VERSION ==="
+
+  # Check if working directory is clean
+  if [[ -n $(git status --porcelain) ]]; then
+    git add .
+    git commit -m "$changelog_msg"
+  else
+    echo "No changes to commit."
+  fi
+
+  # Tag only if it doesn't already exist
+  if git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; then
+    echo "Tag v$NEW_VERSION already exists, skipping tag creation."
+  else
+    git tag "v$NEW_VERSION"
+    git push origin "v$NEW_VERSION"
+    echo "Tag v$NEW_VERSION pushed to origin."
+  fi
+
+  # Always push the commit (even if tag exists)
+  git push origin main
+fi
+
+# =======================
 # ALL DONE
 # =======================
 echo "🎉 All builds complete! Distributables available in ./dist/"
