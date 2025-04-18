@@ -28,7 +28,7 @@ jobs:
             --icon=assets/icon_256x256.ico `
             --add-data "assets;assets" `
             --hidden-import=customtkinter `
-            novelistr.py > build_log.txt 2>&1
+            novelistr.py > win_log.txt 2>&1
 
       - name: 📤 Upload .exe artifact
         uses: actions/upload-artifact@v4

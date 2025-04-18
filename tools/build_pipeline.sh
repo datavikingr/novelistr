@@ -79,11 +79,11 @@ rm -rf "$DEB_DIR" # nukes packaging/novelistr-deb
 mkdir -p "$DEB_DIR/DEBIAN" #rebuilds packaging/novelistr-deb/DEBIAN
 mkdir -p "$DEB_DIR/usr/bin" #rebuilds packaging/novelistr-deb/usr/bin
 mkdir -p "$DEB_DIR/usr/share/applications" #rebuilds packaging/novelistr-deb/usr/share/applications
-mkdir -p "$DEB_DIR/usr/share/icons/hicolor/64x64/apps" #rebuilds packaging/novelistr-deb/usr/share/icons/hicolor/64x64/apps
+mkdir -p "$DEB_DIR/usr/share/icons/hicolor/256x256/apps" #rebuilds packaging/novelistr-deb/usr/share/icons/hicolor/256x256/apps
 
 cp "$BIN_SRC" "$DEB_DIR/usr/bin/$APP_NAME" #cp dist/novelistr packaging/novelistr-deb/usr/bin/novelistr
 chmod +x "$DEB_DIR/usr/bin/$APP_NAME" #makes executable
-cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png" #cp assets/icon_64x64.png packaging/novelistr-deb/usr/share/icons/hicolor/64x64/apps/novelistr.png
+cp "$ICON_SRC" "$DEB_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png" #cp assets/icon_256x256.png packaging/novelistr-deb/usr/share/icons/hicolor/256x256/apps/novelistr.png
 
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
@@ -179,7 +179,7 @@ while [[ -z "$LATEST_RUN_ID" ]]; do
 done
 
 echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
-gh run watch "$LATEST_RUN_ID"
+gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
@@ -207,7 +207,7 @@ while [[ -z "$LATEST_RUN_ID" ]]; do
 done
 
 echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
-gh run watch "$LATEST_RUN_ID"
+gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
