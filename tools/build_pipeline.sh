@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Requires dpkg (sudo dnf install dpkg, if on Fedora), PyInstaller (pip install pyinstall), &
+# flatpak SDK (flatpak install flathub org.freedesktop.Sdk//23.08)
+
 set -e
 
 LOG_DATE=$(date +"%Y.%m.%d.%H.%M")
@@ -107,7 +110,7 @@ EOF
 
 dpkg-deb --build "$DEB_DIR"
 mv "$DEB_DIR.deb" "dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
-rm -rf "$DEB_DIR"
+rm -rf "$DEB_DIR" "$BUILD_DIR"
 echo ".deb file created at dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
 
 # =======================
@@ -129,7 +132,7 @@ flatpak-builder --force-clean --repo="$FLATPAK_REPO_DIR" \
 flatpak build-bundle "$FLATPAK_REPO_DIR" "dist/$FLATPAK_BUNDLE_NAME" "$FLATPAK_APP_ID"
 echo "Flatpak bundle created at dist/$FLATPAK_BUNDLE_NAME"
 
-rm -rf .flatpak-builder build-dir "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR"
+rm -rf .flatpak-builder build-dir "$FLATPAK_BUILD_DIR" "$FLATPAK_REPO_DIR" repo
 
 # =======================
 # ALL DONE
