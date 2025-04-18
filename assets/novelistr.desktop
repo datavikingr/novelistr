@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Novelistr
+Comment=Minimalist markdown-friendly writing app
+Exec=novelistr
+Icon=novelistr
+Terminal=false
+Type=Application
+Categories=Utility;TextEditor;
