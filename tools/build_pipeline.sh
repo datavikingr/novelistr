@@ -214,13 +214,13 @@ gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 rm -rf dist/novelistr-macos
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
-( cd dist && zip -r novelistr-macos.zip novelistr-macos )
-mv dist/novelistr-macos.zip dist/novelistr.app
+mv dist/novelistr-macos dist/novelistr.app
+( cd dist && zip -r novelistr.app.zip novelistr.app )
 
 # The Mac flow hates logs now?? Whatever.
 
 #cat dist/macos-build-log/mac_log.txt >> "logs/${LOG_NAME}.log"
-rm -rf dist/novelistr-macos #dist/macos-build-log/
+rm -rf dist/novelistr.app #dist/macos-build-log/
 
 echo "✅ MacOS build complete!"
 

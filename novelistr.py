@@ -24,19 +24,7 @@ def main():
 
 	def setup_keybinds(notepad):
 		os_name = platform.system()
-		if os_name == "Linux":
-			notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
-			notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
-			notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
-			notepad.bind("<Control-a>", bind_and_block(lambda:select_all()))
-			notepad.bind("<Control-m>", bind_and_block(lambda:key_toggle_format()))
-			notepad.bind("<Control-z>", lambda event: notepad.edit_undo())
-			notepad.bind("<Control-y>", lambda event: notepad.edit_redo())
-			notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
-			notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
-			notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
-			notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
-		elif os_name == "Darwin":
+		if os_name == "Darwin": # Mac needs command based keybinds
 			notepad.bind("<Command-n>", bind_and_block(lambda: func_new()))
 			notepad.bind("<Command-s>", bind_and_block(lambda:save_file()))
 			notepad.bind("<Command-o>", bind_and_block(lambda:load_file()))
@@ -48,17 +36,18 @@ def main():
 			notepad.bind("<Command-i>", bind_and_block(lambda:toggle_tag("italic")))
 			notepad.bind("<Command-u>", bind_and_block(lambda:toggle_tag("underline")))
 			notepad.bind("<Command-h>", bind_and_block(lambda:toggle_tag("heading")))
-		else: #Windows
-			notepad.bind_all("<Control-n>", lambda e: func_new())
-			notepad.bind_all("<Control-s>", lambda e: save_file())
-			notepad.bind_all("<Control-o>", lambda e: load_file())
-			notepad.bind_all("<Control-m>", lambda e: key_toggle_format())
-			notepad.bind_all("<Control-z>", lambda e: notepad.edit_undo())
-			notepad.bind_all("<Control-y>", lambda e: notepad.edit_redo())
-			notepad.bind_all("<Control-b>", lambda e: toggle_tag("bold"))
-			notepad.bind_all("<Control-i>", lambda e: toggle_tag("italic"))
-			notepad.bind_all("<Control-u>", lambda e: toggle_tag("underline"))
-			notepad.bind_all("<Control-h>", lambda e: toggle_tag("heading"))
+		else: #Linux and windows want ctrl; and bind_all is bad for windows
+			notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
+			notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
+			notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
+			notepad.bind("<Control-a>", bind_and_block(lambda:select_all()))
+			notepad.bind("<Control-m>", bind_and_block(lambda:key_toggle_format()))
+			notepad.bind("<Control-z>", lambda event: notepad.edit_undo())
+			notepad.bind("<Control-y>", lambda event: notepad.edit_redo())
+			notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
+			notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
+			notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
+			notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
 
 	#Top toolbar and its related functions
 
