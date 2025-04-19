@@ -39,9 +39,3 @@ jobs:
         with:
           name: novelistr-macos
           path: dist/novelistr.app
-      
-      - name: 📤 Upload build log
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-log
-          path: mac_log.txt
