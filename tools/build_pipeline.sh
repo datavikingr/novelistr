@@ -215,11 +215,8 @@ gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 rm -rf dist/novelistr-macos
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
-mv dist/novelistr dist/novelistr.bin
-mv dist/novelistr-macos dist/novelistr
-zip -r dist/novelistr.zip dist/novelistr
-mv dist/novelistr.zip dist/novelistr.app
-mv dist/novelistr.bin dist/novelistr
+zip -r dist/novelistr-macos.zip dist/novelistr-macos
+mv dist/novelistr-macos.zip dist/novelistr.app
 
 cat dist/macos-build-log/mac_log.txt >> "logs/${LOG_NAME}.log"
 rm -rf dist/macos-build-log/
