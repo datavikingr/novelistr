@@ -64,7 +64,7 @@ rm -rf build/ *.spec
 # =======================
 # DEB PACKAGE
 # =======================
-
+echo
 echo "=== Building .deb package ==="
 VERSION=$(cat "$VERSION_FILE")
 ARCH="amd64"
@@ -116,7 +116,7 @@ echo ".deb file created at dist/${APP_NAME}_${VERSION}_${ARCH}.deb"
 # =======================
 # FLATPAK BUNDLE
 # =======================
-
+echo
 echo "=== Building Flatpak ==="
 FLATPAK_APP_ID="com.novelistr.app"
 FLATPAK_MANIFEST="flatpak/${FLATPAK_APP_ID}.yaml"
@@ -164,7 +164,7 @@ fi
 # =======================
 # GITHUB ACTIONS - WINDOWS
 # =======================
-
+echo
 echo "=== Building Windows Executable ==="
 echo "🔁 Triggering Windows workflow..."
 gh workflow run windows-build.yml
@@ -181,18 +181,21 @@ done
 echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
 gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 
+rm -rf dist/novelistr-windows
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
 
-cat dist/win_log.txt >> "logs/${LOG_NAME}.log"
-rm dist/win_log.txt
+cat dist/windows-build-log/win_log.txt >> "logs/${LOG_NAME}.log"
+rm -rf dist/windows-build-log/
+mv dist/novelistr-windows/novelistr.exe dist/novelistr.exe
+rm -rf dist/novelistr-windows
 
 echo "✅ Windows build complete!"
 
 # =======================
 # GITHUB ACTIONS - MAC
 # =======================
-
+echo
 echo "=== Building OSX Executable ==="
 echo "🔁 Triggering MacOS workflow..."
 gh workflow run macos-build.yml
@@ -209,15 +212,21 @@ done
 echo "⏱ Waiting for run ID $LATEST_RUN_ID to complete..."
 gh run watch "$LATEST_RUN_ID" > /dev/null 2>&1
 
+rm -rf dist/novelistr-macos
 echo "⬇️ Downloading build artifact(s)..."
 gh run download "$LATEST_RUN_ID" --dir "dist"
 
-cat dist/mac_log.txt >> "logs/${LOG_NAME}.log"
-rm dist/mac_log.txt
+mv dist/novelistr-macos dist/novelistr
+zip -r dist/novelistr.zip dist/novelistr
+mv dist/novelistr.zip dist/novelistr.app
+
+cat dist/macos-build-log/mac_log.txt >> "logs/${LOG_NAME}.log"
+rm -rf dist/macos-build-log/
 
 echo "✅ MacOS build complete!"
 
 # =======================
 # ALL DONE
 # =======================
+echo
 echo "🎉 All builds complete! Distributables available in ./dist/"
