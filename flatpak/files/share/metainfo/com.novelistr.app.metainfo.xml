@@ -33,6 +33,9 @@
   </screenshots>
 
   <releases>
+    <release version="1.0.1" date="2025-04-19">
+       <description>debugging windows keybind issues incorrectly detecting ctrl always</description>
+     </release>
     <release version="1.0.0" date="2025-04-17">
       <description>Initial public release of Novelistr.</description>
     </release>
