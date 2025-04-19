@@ -32,7 +32,7 @@ jobs:
             --icon=assets/icon_256x256.icns \
             --add-data "assets:assets" \
             --hidden-import=customtkinter \
-            novelistr.py > mac_log.txt 2>&1
+            novelistr.py
 
       - name: 📤 Upload .app bundle
         uses: actions/upload-artifact@v4
