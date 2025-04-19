@@ -21,6 +21,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+      
+      - name: 🧼 Clean old build dirs
+        run: |
+          rm -rf build dist __pycache__
 
       - name: 🍏 Build macOS .app with PyInstaller
         run: |
