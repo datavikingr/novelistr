@@ -220,7 +220,7 @@ mv dist/novelistr-macos.zip dist/novelistr.app
 # The Mac flow hates logs now?? Whatever.
 
 #cat dist/macos-build-log/mac_log.txt >> "logs/${LOG_NAME}.log"
-#rm -rf dist/macos-build-log/ dist/novelistr-macos
+rm -rf dist/novelistr-macos #dist/macos-build-log/
 
 echo "✅ MacOS build complete!"
 
