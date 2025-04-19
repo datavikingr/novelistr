@@ -2,15 +2,14 @@
 .git/*
 
 # Packaging, Tooling, and PyInstaller outputs
-/build/
-/dist/
+build/
 *.spec
 .venv/
-/packaging/
+packaging/
+dist/backup/*
 
 # Flatpak build directory
 .flatpak-builder/
-*.flatpak
 *.flatpakref
 *.flatpakrepo
 flatpak/.flatpak-builder/
@@ -23,5 +22,6 @@ build-dir/
 # Logs and test files
 *.log
 test.*
-logs/
+logs/*
+!logs/most_recent.log
 TODO

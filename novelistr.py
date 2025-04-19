@@ -5,11 +5,11 @@ import customtkinter as ctk
 import tkinter.font as tkFont
 from tkinter import filedialog
 from pathlib import Path
-import os, json, re, sys
+import os, json, re, sys, platform
 
 def main():
 	# ===== Functions and Logic ===== #
-	#Application-wide behaviors
+	#Application-wide behaviors & additional set up
 	def bind_and_block(action): #Disables non-standard keybind behaviors
 		return lambda e: (action(), "break")[1] 
 		#Surprisingly, a bunch of the 'normal' keybinds have non-standard default behavior
@@ -21,6 +21,44 @@ def main():
 
 	def select_all():
 		notepad.tag_add("sel", "1.0", "end-1c")
+
+	def setup_keybinds(notepad):
+		os_name = platform.system()
+		if os_name == "Linux":
+			notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
+			notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
+			notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
+			notepad.bind("<Control-a>", bind_and_block(lambda:select_all()))
+			notepad.bind("<Control-m>", bind_and_block(lambda:key_toggle_format()))
+			notepad.bind("<Control-z>", lambda event: notepad.edit_undo())
+			notepad.bind("<Control-y>", lambda event: notepad.edit_redo())
+			notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
+			notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
+			notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
+			notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
+		elif os_name == "Darwin":
+			notepad.bind("<Command-n>", bind_and_block(lambda: func_new()))
+			notepad.bind("<Command-s>", bind_and_block(lambda:save_file()))
+			notepad.bind("<Command-o>", bind_and_block(lambda:load_file()))
+			notepad.bind("<Command-a>", bind_and_block(lambda:select_all()))
+			notepad.bind("<Command-m>", bind_and_block(lambda:key_toggle_format()))
+			notepad.bind("<Command-z>", lambda event: notepad.edit_undo())
+			notepad.bind("<Command-y>", lambda event: notepad.edit_redo())
+			notepad.bind("<Command-b>", bind_and_block(lambda:toggle_tag("bold")))
+			notepad.bind("<Command-i>", bind_and_block(lambda:toggle_tag("italic")))
+			notepad.bind("<Command-u>", bind_and_block(lambda:toggle_tag("underline")))
+			notepad.bind("<Command-h>", bind_and_block(lambda:toggle_tag("heading")))
+		else: #Windows
+			notepad.bind_all("<Control-n>", lambda e: func_new())
+			notepad.bind_all("<Control-s>", lambda e: save_file())
+			notepad.bind_all("<Control-o>", lambda e: load_file())
+			notepad.bind_all("<Control-m>", lambda e: key_toggle_format())
+			notepad.bind_all("<Control-z>", lambda e: notepad.edit_undo())
+			notepad.bind_all("<Control-y>", lambda e: notepad.edit_redo())
+			notepad.bind_all("<Control-b>", lambda e: toggle_tag("bold"))
+			notepad.bind_all("<Control-i>", lambda e: toggle_tag("italic"))
+			notepad.bind_all("<Control-u>", lambda e: toggle_tag("underline"))
+			notepad.bind_all("<Control-h>", lambda e: toggle_tag("heading"))
 
 	#Top toolbar and its related functions
 
@@ -545,34 +583,7 @@ def main():
 	default_font = ctk.CTkFont(family="Roboto", size=int(font_size_var.get()))
 	notepad.configure(font=default_font)
 	notepad.bind("<KeyRelease>", lambda event: app.after_idle(update_reports))
-
-	# ===== Keybinds ===== #
-
-	#Windows/Linux
-	notepad.bind("<Control-n>", bind_and_block(lambda: func_new()))
-	notepad.bind("<Control-s>", bind_and_block(lambda:save_file()))
-	notepad.bind("<Control-o>", bind_and_block(lambda:load_file()))
-	notepad.bind("<Control-a>", bind_and_block(lambda:select_all()))
-	notepad.bind("<Control-m>", bind_and_block(lambda:key_toggle_format()))
-	notepad.bind("<Control-z>", lambda event: notepad.edit_undo())
-	notepad.bind("<Control-y>", lambda event: notepad.edit_redo())
-	notepad.bind("<Control-b>", bind_and_block(lambda:toggle_tag("bold")))
-	notepad.bind("<Control-i>", bind_and_block(lambda:toggle_tag("italic")))
-	notepad.bind("<Control-u>", bind_and_block(lambda:toggle_tag("underline")))
-	notepad.bind("<Control-h>", bind_and_block(lambda:toggle_tag("heading")))
-	#Mac
-	notepad.bind("<Command-n>", bind_and_block(lambda: func_new()))
-	notepad.bind("<Command-s>", bind_and_block(lambda:save_file()))
-	notepad.bind("<Command-o>", bind_and_block(lambda:load_file()))
-	notepad.bind("<Command-a>", bind_and_block(lambda:select_all()))
-	notepad.bind("<Command-m>", bind_and_block(lambda:key_toggle_format()))
-	notepad.bind("<Command-z>", lambda event: notepad.edit_undo())
-	notepad.bind("<Command-y>", lambda event: notepad.edit_redo())
-	notepad.bind("<Command-b>", bind_and_block(lambda:toggle_tag("bold")))
-	notepad.bind("<Command-i>", bind_and_block(lambda:toggle_tag("italic")))
-	notepad.bind("<Command-u>", bind_and_block(lambda:toggle_tag("underline")))
-	notepad.bind("<Command-h>", bind_and_block(lambda:toggle_tag("heading")))
-
+	setup_keybinds(notepad)
 
 	# ===== Text Area Fromatting ===== #
 	text_widget = notepad._textbox

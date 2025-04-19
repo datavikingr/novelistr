@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
-# Requires dpkg (sudo dnf install dpkg, if on Fedora), PyInstaller (pip install pyinstall), &
-# flatpak SDK (flatpak install flathub org.freedesktop.Sdk//23.08)
+# Requires dpkg (sudo dnf install dpkg), PyInstaller (pip install pyinstall), &
+# flatpak SDK (flatpak install flathub org.freedesktop.Sdk//23.08), gh (sudo dnf install gh)
 
 set -e
+
+# =======================
+# LOGGING FUNCTIONALITY
+# =======================
 
 LOG_DATE=$(date +"%Y.%m.%d.%H.%M")
 LOG_NAME="build_${LOG_DATE}"
@@ -53,13 +57,8 @@ fi
 # =======================
 
 echo "=== Building PyInstaller binary ==="
-pyinstaller --onefile --noconfirm --windowed \
-  --icon=assets/icon_256x256.png \
-  --add-data "assets:assets" \
-  --hidden-import=customtkinter \
-  novelistr.py
-
-rm -rf build/ *.spec
+source tools/localbin.sh
+build_binary_from_pyinstaller
 
 # =======================
 # DEB PACKAGE
@@ -227,4 +226,7 @@ echo "✅ MacOS build complete!"
 # ALL DONE
 # =======================
 echo
-echo "🎉 All builds complete! Distributables available in ./dist/"
+echo "🎉 All builds complete! Distributables available in dist/"
+echo
+echo "Dumping this run's logs to git-tracked file: logs/most_recent.log."
+cat "logs/${LOG_NAME}.log" >> logs/most_recent.log
